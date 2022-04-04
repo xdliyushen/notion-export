@@ -1,5 +1,5 @@
 {
-    "name": "notion-export",
+    "name": "notion-export-cli",
     "version": "0.1.0",
     "main": "index.js",
     "scripts": {
