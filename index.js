@@ -1,7 +1,7 @@
 const { program } = require('commander');
 const api = require('./api');
 
-// todo opt 登录
+// todo otp 登录
 // todo 导出特定 page
 // todo 捕获接口参数错误
 // todo cli 文件
