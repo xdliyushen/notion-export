@@ -1,0 +1,24 @@
+{
+    "name": "notion-export",
+    "version": "0.1.0",
+    "main": "index.js",
+    "scripts": {
+        "build": "echo ok"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/xdliyushen/notion-export.git"
+    },
+    "author": "mett li",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/xdliyushen/notion-export/issues"
+    },
+    "homepage": "https://github.com/xdliyushen/notion-export#readme",
+    "dependencies": {
+        "commander": "^9.1.0",
+        "fetch-cookie": "^2.0.3",
+        "node-fetch": "^2",
+        "ramda": "^0.28.0"
+    }
+}
