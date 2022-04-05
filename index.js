@@ -10,9 +10,9 @@ const getExportUrl = (taskId) => {
                     clearTimeout(timer);
                 }, 3000);
             } else {
-                resolve(statusInfo.status.exportURL);
+                resolve(statusInfo?.status?.exportURL);
             }
-        } catch(err) {
+        } catch (err) {
             console.log(err);
             reject(err);
         }
@@ -22,35 +22,39 @@ const getExportUrl = (taskId) => {
 }
 
 // todo otp 登录
-// todo 导出特定 page
+// todo 增加文档
 const exportService = async (opts = {}) => {
     try {
         const {
             email,
             password,
-            spaceId,
             blockId,
             exportType,
         } = opts;
+        const exportUrls = [];
 
         await api.login(email, password);
+        console.log('login success!');
 
-        console.log('login success!')
+        const spaceId = await api.getSpaces();
+        console.log(`get spaces success! spaceId: ${spaceId}`);
 
-        const { taskId } = blockId ?
-            await api.launchExportBlockTask(spaceId, blockId, exportType) :
-            await api.launchExportSpaceTask(spaceId, exportType);
+        const blockIds = Array.isArray(blockId) ? blockId : [blockId];
 
-        console.log(`task launched! taskId: ${taskId}`);
+        for (const targetBlockId of blockIds) {
+            const { taskId } = await api.launchExportTask(spaceId, targetBlockId, exportType)
+            console.log(`task launched! taskId: ${taskId}`);
 
-        const exportUrl = await new Promise(getExportUrl(taskId));
+            const exportUrl = await new Promise(getExportUrl(taskId));
+            console.log(`export success! export url: ${exportUrl}`);
 
-        console.log(`export success! export url: ${exportUrl}`);
+            exportUrls.push(exportUrl);
+        }
 
-        return exportUrl;
+        return exportUrls;
     } catch (err) {
         console.log(err);
-        return '';
+        return [''];
     }
 };
 

@@ -1,4 +1,4 @@
-const nodeFetch = require("node-fetch");
+const nodeFetch = require('node-fetch');
 const cookieFetchWrapper = require('fetch-cookie');
 const mergeDeepRight = require('ramda/src/mergeDeepRight');
 
@@ -22,7 +22,7 @@ const fetch = (api = '', opts = {}) => {
         .then(res => res.json())
         .then(res => {
             // 接口报错
-            if(res.errorId) {
+            if (res.errorId) {
                 throw new Error(`${api} ${res.name} ${res.message}`);
             }
             return res;
@@ -38,44 +38,39 @@ const login = (email, password) => {
     })
 }
 
-const launchExportSpaceTask = (spaceId, exportType) => {
-    return fetch('enqueueTask', {
-        data: {
-            "task": {
-                "eventName": "exportSpace",
-                "recursive": false,
-                "request": {
-                    spaceId,
-                    "exportOptions": {
-                        exportType,
-                        "timeZone": "Asia/Shanghai",
-                        "locale": "en",
-                    },
-                },
-            }
-        },
-    })
+const getSpaces = () => {
+    return fetch('getSpaces')
+        .then(res => {
+            const key = Object.keys(res)[0];
+            const spaceId = Object.keys(res[key].space)[0];
+
+            return spaceId;
+        })
 }
 
-const launchExportBlockTask = (spaceId, blockId, exportType) => {
-    return fetch(`enqueueTask`, {
+const launchExportTask = (spaceId, blockId, exportType) => {
+    const eventName = blockId ? 'exportBlock' : 'exportSpace';
+    const requestOpts = blockId ? {
+        block: { spaceId, id: blockId },
+        exportOptions: exportType === 'markdown' ? {} : { exportType },
+    } : {
+        spaceId,
+        exportOptions: exportType === 'markdown' ? {} : { exportType },
+    }
+
+    return fetch('enqueueTask', {
         data: {
-            "task":{"eventName":"exportBlock","request":{"block":{"id":"07e03492-9491-45ec-b3b8-ccb1421d47a8","spaceId":"16c447c6-c832-49fa-96ea-bd0fe947716d"},"recursive":false,"exportOptions":{"exportType":"markdown","timeZone":"Asia/Shanghai","locale":"en"}}}
-            // "task": {
-            //     "eventName": "exportBlock",
-            //     "request": {
-            //         "block": {
-            //             "spaceId": spaceId,
-            //             "id": blockId,
-            //         },
-            //         "recursive": false,
-            //         "exportOptions": {
-            //             exportType,
-            //             "timeZone": "Asia/Shanghai",
-            //             "locale": "en",
-            //         }
-            //     }
-            // },
+            task: {
+                eventName,
+                request: mergeDeepRight({
+                    recursive: false,
+                    exportOptions: {
+                        exportType,
+                        timeZone: 'Asia/Shanghai',
+                        locale: 'en',
+                    },
+                }, requestOpts),
+            }
         },
     });
 }
@@ -88,7 +83,7 @@ const getUserTaskStatus = (taskId) => {
     })
         .then(res => {
             const targetResult = res?.results?.[0] || {};
-            if(targetResult.state === 'failure') {
+            if (targetResult.state === 'failure') {
                 throw new Error(`getTasks error: ${targetResult.error}`);
             }
 
@@ -98,7 +93,7 @@ const getUserTaskStatus = (taskId) => {
 
 module.exports = {
     login,
-    launchExportSpaceTask,
-    launchExportBlockTask,
+    getSpaces,
+    launchExportTask,
     getUserTaskStatus,
 }
