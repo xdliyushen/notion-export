@@ -18,9 +18,7 @@ const fetch = (api = '', opts = {}) => {
         body: JSON.stringify(data || {}),
     }, opts);
 
-    // todo 修改
-    return fetchFn(`http://localhost:8000/${api}`, options)
-    // return fetchFn(`https://www.notion.so/api/v3/${api}`, options)
+    return fetchFn(`https://www.notion.so/api/v3/${api}`, options)
         .then(res => res.json());
 };
 
