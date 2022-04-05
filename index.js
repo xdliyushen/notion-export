@@ -1,42 +1,60 @@
-const { program } = require('commander');
 const api = require('./api');
 
-// todo otp 登录
-// todo 导出特定 page
-// todo 捕获接口参数错误
-// todo cli 文件
-const exportService = async (opts = {}) => {
-    const {
-        email,
-        password,
-        spaceId,
-        blockId,
-        exportType,
-    } = opts;
-
-    await api.login(email, password);
-
-    const { taskId } = blockId ?
-        await api.launchExportBlockTask(spaceId, blockId, exportType) :
-        await api.launchExportSpaceTask(spaceId, exportType);
-
-    let timer = null;
-
-    const timerFn = async (resolve) => {
-        const statusInfo = await api.getUserTaskStatus(taskId);
-
-        clearTimeout(timer);
-
-        if (statusInfo.state === 'in_progress') {
-            timer = setTimeout(() => timerFn(resolve), 3000);
-        } else {
-            resolve(statusInfo.status.exportURL);
+const getExportUrl = (taskId) => {
+    const tick = async (resolve, reject) => {
+        try {
+            const statusInfo = await api.getUserTaskStatus(taskId);
+            if (statusInfo.state === 'in_progress') {
+                const timer = setTimeout(() => {
+                    tick(resolve, reject);
+                    clearTimeout(timer);
+                }, 3000);
+            } else {
+                resolve(statusInfo.status.exportURL);
+            }
+        } catch(err) {
+            console.log(err);
+            reject(err);
         }
     }
 
-    const exportUrl = await new Promise(timerFn);
+    return tick;
+}
 
-    return exportUrl;
+// todo otp 登录
+// todo 导出特定 page
+const exportService = async (opts = {}) => {
+    try {
+        const {
+            email,
+            password,
+            spaceId,
+            blockId,
+            exportType,
+        } = opts;
+
+        // todo 删除
+        console.log(opts);
+
+        await api.login(email, password);
+
+        console.log('login success!')
+
+        const { taskId } = blockId ?
+            await api.launchExportBlockTask(spaceId, blockId, exportType) :
+            await api.launchExportSpaceTask(spaceId, exportType);
+
+        console.log(`task launched! taskId: ${taskId}`);
+
+        const exportUrl = await new Promise(getExportUrl(taskId));
+
+        console.log(`export success! export url: ${exportUrl}`);
+
+        return exportUrl;
+    } catch (err) {
+        console.log(err);
+        return '';
+    }
 };
 
 module.exports = exportService;

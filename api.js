@@ -19,7 +19,14 @@ const fetch = (api = '', opts = {}) => {
     }, opts);
 
     return fetchFn(`https://www.notion.so/api/v3/${api}`, options)
-        .then(res => res.json());
+        .then(res => res.json())
+        .then(res => {
+            // 接口报错
+            if(res.errorId) {
+                throw new Error(`${api} ${res.name} ${res.message}`);
+            }
+            return res;
+        })
 };
 
 const login = (email, password) => {
@@ -28,7 +35,7 @@ const login = (email, password) => {
             email,
             password,
         },
-    });
+    })
 }
 
 const launchExportSpaceTask = (spaceId, exportType) => {
@@ -53,22 +60,22 @@ const launchExportSpaceTask = (spaceId, exportType) => {
 const launchExportBlockTask = (spaceId, blockId, exportType) => {
     return fetch(`enqueueTask`, {
         data: {
-            "task": {
-                "eventName": "exportBlock",
-                "request": {
-                    "block": {
-                        "spaceId": spaceId,
-                        "id": blockId,
-                    },
-                    "recursive": true,
-                    "exportOptions": {
-                        exportType,
-                        "timeZone": "Asia/Shanghai",
-                        "locale": "en",
-                        "includeContents": "everything"
-                    }
-                }
-            },
+            "task":{"eventName":"exportBlock","request":{"block":{"id":"07e03492-9491-45ec-b3b8-ccb1421d47a8","spaceId":"16c447c6-c832-49fa-96ea-bd0fe947716d"},"recursive":false,"exportOptions":{"exportType":"markdown","timeZone":"Asia/Shanghai","locale":"en"}}}
+            // "task": {
+            //     "eventName": "exportBlock",
+            //     "request": {
+            //         "block": {
+            //             "spaceId": spaceId,
+            //             "id": blockId,
+            //         },
+            //         "recursive": false,
+            //         "exportOptions": {
+            //             exportType,
+            //             "timeZone": "Asia/Shanghai",
+            //             "locale": "en",
+            //         }
+            //     }
+            // },
         },
     });
 }
@@ -79,7 +86,14 @@ const getUserTaskStatus = (taskId) => {
             taskIds: [taskId],
         }
     })
-        .then(res => res?.results?.[0])
+        .then(res => {
+            const targetResult = res?.results?.[0] || {};
+            if(targetResult.state === 'failure') {
+                throw new Error(`getTasks error: ${targetResult.error}`);
+            }
+
+            return targetResult;
+        })
 }
 
 module.exports = {
