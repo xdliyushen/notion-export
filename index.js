@@ -33,9 +33,6 @@ const exportService = async (opts = {}) => {
             exportType,
         } = opts;
 
-        // todo 删除
-        console.log(opts);
-
         await api.login(email, password);
 
         console.log('login success!')
