@@ -52,11 +52,7 @@ const launchExportTask = (spaceId, blockId, exportType) => {
     const eventName = blockId ? 'exportBlock' : 'exportSpace';
     const requestOpts = blockId ? {
         block: { spaceId, id: blockId },
-        exportOptions: exportType === 'markdown' ? {} : { exportType },
-    } : {
-        spaceId,
-        exportOptions: exportType === 'markdown' ? {} : { exportType },
-    }
+    } : { spaceId };
 
     return fetch('enqueueTask', {
         data: {

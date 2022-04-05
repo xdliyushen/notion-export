@@ -29,7 +29,7 @@ const exportService = async (opts = {}) => {
             email,
             password,
             blockId,
-            exportType,
+            exportType = 'markdown',
         } = opts;
         const exportUrls = [];
 
