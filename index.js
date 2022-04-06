@@ -4,13 +4,13 @@ const getExportUrl = (taskId) => {
     const tick = async (resolve, reject) => {
         try {
             const statusInfo = await api.getUserTaskStatus(taskId);
-            if (statusInfo.state === 'in_progress') {
+            if (statusInfo.state === 'success') {
+                resolve(statusInfo?.status?.exportURL);
+            } else {
                 const timer = setTimeout(() => {
                     tick(resolve, reject);
                     clearTimeout(timer);
                 }, 3000);
-            } else {
-                resolve(statusInfo?.status?.exportURL);
             }
         } catch (err) {
             console.log(err);
